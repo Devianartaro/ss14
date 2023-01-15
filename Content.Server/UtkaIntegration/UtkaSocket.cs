@@ -103,6 +103,7 @@ public sealed class UtkaSocket : UdpServer
 
         _sawmill.Info($"UTKASockets: Execiting command from UTKASocket: {command} args: {string.Join(" ", args)}");
         _taskManager.RunOnMainThread(() => Commands[command].Execute(message, args));
+        ReceiveAsync();
     }
 
     private bool NullCheck(FromDiscordMessage fromDiscordMessage)

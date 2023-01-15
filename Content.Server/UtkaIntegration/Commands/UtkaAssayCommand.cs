@@ -15,17 +15,11 @@ public sealed class UtkaAssayCommand : IUtkaCommand
         var ckey = message.Ckey;
         var content = string.Join(" ", args);
 
-        var chatSystem = IoCManager.Resolve<IChatManager>();
-        var adminManager = IoCManager.Resolve<IAdminManager>();
+        if(string.IsNullOrWhiteSpace(content)) return;
 
-        chatSystem.TrySendOOCMessage(null!, content, OOCChatType.Admin);
+        var chatManager = IoCManager.Resolve<IChatManager>();
 
-        var clients = adminManager.ActiveAdmins.Select(p => p.ConnectedClient);
+        chatManager.SendHookAdminChat(ckey!, content);
 
-        var wrappedMessage = Loc.GetString("chat-manager-send-admin-chat-wrap-message",
-            ("adminChannelName", Loc.GetString("chat-manager-admin-channel-name")),
-            ("playerName", ckey!), ("message", FormattedMessage.EscapeText(content!)));
-
-         chatSystem.ChatMessageToMany(ChatChannel.Admin, content, wrappedMessage, default, false, true, clients.ToList());
     }
 }

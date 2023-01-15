@@ -121,6 +121,26 @@ namespace Content.Server.Chat.Managers
             _adminLogger.Add(LogType.Chat, LogImpact.Low, $"Hook OOC from {sender}: {message}");
         }
 
+        public void SendHookAdminChat(string sender, string message)
+        {
+            var admins = _adminManager.ActiveAdmins;
+
+            var wrappedMessage = Loc.GetString("chat-manager-send-admin-chat-wrap-message",
+                ("adminChannelName", Loc.GetString("chat-manager-admin-discord-channel-name")),
+                ("playerName", sender), ("message", FormattedMessage.EscapeText(message)));
+
+            ChatMessageToMany(ChatChannel.Admin, message, wrappedMessage, EntityUid.Invalid, false, true, admins.Select(p => p.ConnectedClient));
+
+            var toUtkaMessage = new ToUtkaMessage
+            {
+                Key = _configurationManager.GetCVar(CCVars.UtkaSocketKey),
+                Command = "asay",
+                Message = new List<string>{sender, message}
+            };
+
+            _utkaSocketWrapper.SendMessage(toUtkaMessage);
+        }
+
         #endregion
 
         #region Public OOC Chat API

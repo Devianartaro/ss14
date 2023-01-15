@@ -13,7 +13,7 @@ namespace Content.Server.UtkaIntegration;
 public sealed class UtkaWhoCommand : IUtkaCommand
 {
     public string Name => "who";
-    [Dependency] private readonly UtkaSocketWrapper _utkaSocketWrapper = default!;
+    private UtkaSocketWrapper _utkaSocketWrapper => IoCManager.Resolve<UtkaSocketWrapper>();
     public void Execute(FromDiscordMessage message, string[] args)
     {
         var configManager = IoCManager.Resolve<IConfigurationManager>();

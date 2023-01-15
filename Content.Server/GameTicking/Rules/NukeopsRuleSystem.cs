@@ -2,6 +2,7 @@ using System.Linq;
 using Content.Server.Administration.Commands;
 using Content.Server.CharacterAppearance.Components;
 using Content.Server.Chat.Managers;
+using Content.Server.GameTicking.Presets;
 using Content.Server.GameTicking.Rules.Components;
 using Content.Server.GameTicking.Rules.Configurations;
 using Content.Server.Ghost.Roles.Components;
@@ -18,9 +19,11 @@ using Content.Server.Spawners.Components;
 using Content.Server.Station.Components;
 using Content.Server.Station.Systems;
 using Content.Server.Traitor;
+using Content.Server.Traits.Assorted;
+using Content.Shared.CombatMode.Pacification;
 using Content.Shared.Dataset;
-using Content.Shared.MobState;
-using Content.Shared.MobState.Components;
+using Content.Shared.Mobs;
+using Content.Shared.Mobs.Components;
 using Content.Shared.Nuke;
 using Content.Shared.Preferences;
 using Content.Shared.Roles;
@@ -174,6 +177,10 @@ public sealed class NukeopsRuleSystem : GameRuleSystem
         var name = MetaData(uid).EntityName;
         if (session != null)
             _operativePlayers.Add(name, session);
+
+        //diona pacifist remove
+        RemComp<PacifistComponent>(uid);
+        RemComp<PacifiedComponent>(uid);
     }
 
     private void OnComponentRemove(EntityUid uid, NukeOperativeComponent component, ComponentRemove args)
@@ -310,7 +317,7 @@ public sealed class NukeopsRuleSystem : GameRuleSystem
         var allAlive = true;
         foreach (var (_, state) in EntityQuery<NukeOperativeComponent, MobStateComponent>())
         {
-            if (state.CurrentState is DamageState.Alive)
+            if (state.CurrentState is MobState.Alive)
             {
                 continue;
             }
@@ -415,7 +422,7 @@ public sealed class NukeopsRuleSystem : GameRuleSystem
             .Where(ent =>
                 ent.Item3.MapID == shuttleMapId
                 || ent.Item3.MapID == targetStationMap)
-            .Any(ent => ent.Item2.CurrentState == DamageState.Alive && ent.Item1.Running);
+            .Any(ent => ent.Item2.CurrentState == MobState.Alive && ent.Item1.Running);
 
         if (operativesAlive)
             return; // There are living operatives than can access the shuttle, or are still on the station's map.
@@ -446,7 +453,7 @@ public sealed class NukeopsRuleSystem : GameRuleSystem
 
     private void OnMobStateChanged(EntityUid uid, NukeOperativeComponent component, MobStateChangedEvent ev)
     {
-        if(ev.CurrentMobState == DamageState.Dead)
+        if(ev.NewMobState == MobState.Dead)
             CheckRoundShouldEnd();
     }
 
@@ -761,8 +768,8 @@ public sealed class NukeopsRuleSystem : GameRuleSystem
             {
                 var spawnPoint = EntityManager.SpawnEntity(_nukeopsRuleConfig.GhostSpawnPointProto, _random.Pick(spawns));
                 var spawner = EnsureComp<GhostRoleMobSpawnerComponent>(spawnPoint);
-                spawner.RoleName = nukeOpsAntag.Name;
-                spawner.RoleDescription = nukeOpsAntag.Objective;
+                spawner.RoleName = Loc.GetString(nukeOpsAntag.Name);
+                spawner.RoleDescription = Loc.GetString(nukeOpsAntag.Objective);
 
                 var nukeOpSpawner = EnsureComp<NukeOperativeSpawnerComponent>(spawnPoint);
                 nukeOpSpawner.OperativeName = spawnDetails.Name;
@@ -792,6 +799,9 @@ public sealed class NukeopsRuleSystem : GameRuleSystem
             return;
 
         mind.AddRole(new TraitorRole(mind, _prototypeManager.Index<AntagPrototype>(_nukeopsRuleConfig.OperativeRoleProto)));
+        AddComp<NukeOperativeComponent>(mind.OwnedEntity.Value);
+        _faction.RemoveFaction(mind.OwnedEntity.Value, "NanoTrasen", false);
+        _faction.AddFaction(mind.OwnedEntity.Value, "Syndicate");
         SetOutfitCommand.SetOutfit(mind.OwnedEntity.Value, "SyndicateOperativeGearFull", EntityManager);
     }
 
@@ -801,7 +811,7 @@ public sealed class NukeopsRuleSystem : GameRuleSystem
             return;
 
         _nukeopsRuleConfig = nukeOpsConfig;
-        var minPlayers = nukeOpsConfig.MinPlayers;
+        var minPlayers = _prototypeManager.Index<GamePresetPrototype>(Prototype).MinPlayers;
         if (!ev.Forced && ev.Players.Length < minPlayers)
         {
             _chatManager.DispatchServerAnnouncement(Loc.GetString("nukeops-not-enough-ready-players", ("readyPlayersCount", ev.Players.Length), ("minimumPlayers", minPlayers)));

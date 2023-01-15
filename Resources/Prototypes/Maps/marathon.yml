@@ -1,12 +1,13 @@
 - type: gameMap
-  id: WhiteMarathon
+  id: Marathon
   mapName: 'Marathon Station'
-  mapPath: /Maps/White/Whitemarathon.yml
-  minPlayers: 35
+  mapPath: /Maps/marathon.yml
+  minPlayers: 0
   maxPlayers: 70
   stations:
     Marathon:
       mapNameTemplate: '{0} Marathon Station {1}'
+      emergencyShuttlePath: /Maps/Shuttles/emergency_courser.yml
       nameGenerator:
         !type:NanotrasenNameGenerator
         prefixCreator: '14'

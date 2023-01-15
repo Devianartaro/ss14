@@ -197,7 +197,7 @@ namespace Content.Shared.CCVar
         ///     Prototype to use for map pool.
         /// </summary>
         public static readonly CVarDef<string>
-            GameMapPool = CVarDef.Create("game.map_pool", "WhiteMapPool", CVar.SERVERONLY);
+            GameMapPool = CVarDef.Create("game.map_pool", "WhiteMapBox", CVar.SERVERONLY);
 
         /// <summary>
         /// The depth of the queue used to calculate which map is next in rotation.
@@ -334,9 +334,6 @@ namespace Content.Shared.CCVar
          * Traitor
          */
 
-        public static readonly CVarDef<int> TraitorMinPlayers =
-            CVarDef.Create("traitor.min_players", 5);
-
         public static readonly CVarDef<int> TraitorMaxTraitors =
             CVarDef.Create("traitor.max_traitors", 12); // Assuming average server maxes somewhere from like 50-80 people
 
@@ -365,9 +362,6 @@ namespace Content.Shared.CCVar
         /*
          * Zombie
          */
-
-        public static readonly CVarDef<int> ZombieMinPlayers =
-            CVarDef.Create("zombie.min_players", 20);
 
         public static readonly CVarDef<int> ZombieMaxInitialInfected =
             CVarDef.Create("zombie.max_initial_infected", 6);
@@ -514,6 +508,10 @@ namespace Content.Shared.CCVar
 
         public static readonly CVarDef<bool> AdminSoundsEnabled =
             CVarDef.Create("audio.admin_sounds_enabled", true, CVar.ARCHIVE | CVar.CLIENTONLY);
+        public static readonly CVarDef<string> AdminChatSoundPath =
+            CVarDef.Create("audio.admin_chat_sound_path", "/Audio/Items/pop.ogg", CVar.ARCHIVE | CVar.CLIENT | CVar.REPLICATED);
+        public static readonly CVarDef<float> AdminChatSoundVolume =
+            CVarDef.Create("audio.admin_chat_sound_volume", -5f, CVar.ARCHIVE | CVar.CLIENT | CVar.REPLICATED);
 
         /*
          * HUD
@@ -1048,7 +1046,7 @@ namespace Content.Shared.CCVar
         ///     Time in minutes after round start to auto-call the shuttle. Set to zero to disable.
         /// </summary>
         public static readonly CVarDef<int> EmergencyShuttleAutoCallTime =
-            CVarDef.Create("shuttle.auto_call_time", 90, CVar.SERVERONLY);
+            CVarDef.Create("shuttle.auto_call_time", 0, CVar.SERVERONLY);
 
         /// <summary>
         ///     Time in minutes after the round was extended (by recalling the shuttle) to call
@@ -1154,7 +1152,7 @@ namespace Content.Shared.CCVar
             CVarDef.Create("chat.chat_sanitizer_enabled", true, CVar.SERVERONLY);
 
         public static readonly CVarDef<bool> ChatShowTypingIndicator =
-            CVarDef.Create("chat.show_typing_indicator", true, CVar.CLIENTONLY);
+            CVarDef.Create("chat.show_typing_indicator", true, CVar.CLIENTONLY); // crutch
 
         /*
          * AFK
@@ -1397,9 +1395,9 @@ namespace Content.Shared.CCVar
         public static readonly CVarDef<string> InfoLinksBugReport =
             CVarDef.Create("infolinks.bug_report", "", CVar.SERVER | CVar.REPLICATED);
 
-        /**
+           /*
          * SPONSORS
-         */
+           */
 
         /// <summary>
         /// URL of the sponsors server API.
@@ -1408,9 +1406,9 @@ namespace Content.Shared.CCVar
             CVarDef.Create("sponsor.api_url", "", CVar.SERVERONLY);
 
 
-        /*
+           /*
          * Queue
-         */
+           */
 
         /// <summary>
         ///     Controls if the connections queue is enabled. If enabled stop kicking new players after `SoftMaxPlayers` cap and instead add them to queue.
@@ -1419,9 +1417,9 @@ namespace Content.Shared.CCVar
             QueueEnabled = CVarDef.Create("queue.enabled", false, CVar.SERVERONLY);
 
 
-        /*
+           /*
          * Discord
-         */
+           */
 
         public static readonly CVarDef<string> DiscordRoundWebhook =
             CVarDef.Create("discord.round_webhook", string.Empty, CVar.SERVERONLY);
@@ -1429,17 +1427,39 @@ namespace Content.Shared.CCVar
         public static readonly CVarDef<string> DiscordRoundRoleId =
             CVarDef.Create("discord.round_roleid", string.Empty, CVar.SERVERONLY);
 
-        /*
+        public static readonly CVarDef<bool> DiscordRoundStartOnly =
+            CVarDef.Create("discord.round_start_only", false, CVar.SERVERONLY);
+
+          /*
         * GRAPHICS
-        */
-
-        public static readonly CVarDef<bool> Shaders =
-            CVarDef.Create("graphics.shaders", true, CVar.CLIENTONLY | CVar.ARCHIVE);
-
+          */
         public static readonly CVarDef<bool> FilmGrain =
             CVarDef.Create("graphics.film_grain", true, CVar.CLIENTONLY | CVar.ARCHIVE);
 
+        /**
+     * TTS (Text-To-Speech)
+        */
 
+        /// <summary>
+        /// URL of the TTS server API.
+        /// </summary>
+        public static readonly CVarDef<bool> TTSEnabled =
+            CVarDef.Create("tts.enabled", true, CVar.SERVERONLY);
+
+        /// <summary>
+        /// URL of the TTS server API.
+        /// </summary>
+        public static readonly CVarDef<string> TTSApiUrl =
+            CVarDef.Create("tts.api_url", "", CVar.SERVERONLY);
+
+        /// <summary>
+        /// TTS Volume
+        /// </summary>
+        public static readonly CVarDef<float> TtsVolume =
+            CVarDef.Create("tts.volume", 0f, CVar.CLIENTONLY | CVar.ARCHIVE);
+
+        public static readonly CVarDef<int> TTSMaxCacheSize =
+            CVarDef.Create("tts.max_cash_size", 200, CVar.SERVERONLY | CVar.ARCHIVE);
 
         /*
          * CONFIG
@@ -1473,8 +1493,8 @@ namespace Content.Shared.CCVar
         /// </summary>
         public static readonly CVarDef<bool> ConfigPresetDebug =
             CVarDef.Create("config.preset_debug", true, CVar.SERVERONLY);
-
-        public static readonly CVarDef<string> UtkaSocketKey = CVarDef.Create("utka.socket_key", String.Empty, CVar.SERVERONLY | CVar.CONFIDENTIAL);
+        public static readonly CVarDef<string> UtkaSocketKey =
+            CVarDef.Create("utka.socket_key", String.Empty, CVar.SERVERONLY | CVar.CONFIDENTIAL);
 
     }
 }

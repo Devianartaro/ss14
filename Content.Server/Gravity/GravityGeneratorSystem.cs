@@ -1,17 +1,24 @@
+using Content.Server.Administration.Logs;
 using Content.Server.Audio;
+using Content.Server.Chat.Managers;
 using Content.Server.Power.Components;
+using Content.Shared.Database;
 using Content.Shared.Gravity;
 using Content.Shared.Interaction;
 using Robust.Server.GameObjects;
+using Robust.Server.Player;
+using Robust.Shared.Players;
 
 namespace Content.Server.Gravity
 {
     public sealed class GravityGeneratorSystem : EntitySystem
     {
+        [Dependency] private readonly IAdminLogManager _adminLogger = default!;
         [Dependency] private readonly AmbientSoundSystem _ambientSoundSystem = default!;
         [Dependency] private readonly GravitySystem _gravitySystem = default!;
         [Dependency] private readonly SharedAppearanceSystem _appearance = default!;
         [Dependency] private readonly UserInterfaceSystem _uiSystem = default!;
+        [Dependency] private readonly IChatManager _chatManager = default!;
 
         public override void Initialize()
         {
@@ -124,10 +131,19 @@ namespace Content.Server.Gravity
             }
         }
 
-        private void SetSwitchedOn(EntityUid uid, GravityGeneratorComponent component, bool on, ApcPowerReceiverComponent? powerReceiver = null)
+        private void SetSwitchedOn(EntityUid uid, GravityGeneratorComponent component, bool on,
+            ApcPowerReceiverComponent? powerReceiver = null, ICommonSession? session = null)
         {
             if (!Resolve(uid, ref powerReceiver))
                 return;
+
+            if (session is { AttachedEntity: { } })
+            {
+                var player = session.AttachedEntity.Value;
+                _adminLogger.Add(LogType.Action, on ? LogImpact.Medium : LogImpact.High, $"{ToPrettyString(player):player} set ${ToPrettyString(uid):target} to {(on ? "on" : "off")}");
+                _chatManager.SendAdminAnnouncement(Loc.GetString("admin-chatalert-gravity-generator-turned",
+                    ("player", ToPrettyString(player)), ("gravgen", ToPrettyString(uid)), ("status", on ? "on" : "off")));
+            }
 
             component.SwitchedOn = on;
             UpdatePowerState(component, powerReceiver);
@@ -279,7 +295,7 @@ namespace Content.Server.Gravity
             GravityGeneratorComponent component,
             SharedGravityGeneratorComponent.SwitchGeneratorMessage args)
         {
-            SetSwitchedOn(uid, component, args.On);
+            SetSwitchedOn(uid, component, args.On, session:args.Session);
         }
     }
 }

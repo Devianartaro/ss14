@@ -4,9 +4,10 @@ using Content.Server.Ghost;
 using Content.Server.Ghost.Components;
 using Content.Server.Mind.Components;
 using Content.Shared.Examine;
-using Content.Shared.MobState.Components;
 using Content.Shared.Administration.Logs;
 using Content.Shared.Database;
+using Content.Shared.Mobs.Components;
+using Content.Shared.Mobs.Systems;
 using Robust.Shared.Map;
 using Robust.Shared.Timing;
 
@@ -16,6 +17,7 @@ public sealed class MindSystem : EntitySystem
 {
     [Dependency] private readonly IMapManager _mapManager = default!;
     [Dependency] private readonly GameTicker _gameTicker = default!;
+    [Dependency] private readonly MobStateSystem _mobStateSystem = default!;
     [Dependency] private readonly GhostSystem _ghostSystem = default!;
     [Dependency] private readonly ISharedAdminLogManager _adminLogger = default!;
 
@@ -152,7 +154,7 @@ public sealed class MindSystem : EntitySystem
             return;
         }
 
-        var dead = TryComp<MobStateComponent?>(uid, out var state) && state.IsDead();
+        var dead = TryComp<MobStateComponent?>(uid, out var state) && _mobStateSystem.IsDead(uid, state);
 
         if (dead)
         {

@@ -1,8 +1,8 @@
 - type: gameMap
-  id: WhiteBagel
+  id: Bagel
   mapName: 'Bagel Station'
-  mapPath: /Maps/White/Whitebagel.yml
-  minPlayers: 35
+  mapPath: /Maps/bagel.yml
+  minPlayers: 0
   stations:
     Bagel:
       mapNameTemplate: '{0} Bagel Station {1}'

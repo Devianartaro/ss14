@@ -63,13 +63,13 @@ namespace Content.Client.Preferences.UI
         private Button _saveButton => CSaveButton;
         private OptionButton _sexButton => CSexButton;
         private OptionButton _genderButton => CPronounsButton;
+        private OptionButton _voiceButton => CVoiceButton;
         private Slider _skinColor => CSkin;
         private OptionButton _clothingButton => CClothingButton;
         private OptionButton _backpackButton => CBackpackButton;
         private SingleMarkingPicker _hairPicker => CHairStylePicker;
         private SingleMarkingPicker _facialHairPicker => CFacialHairPicker;
         private EyeColorPicker _eyesPicker => CEyeColorPicker;
-
         private TabContainer _tabContainer => CTabContainer;
         private BoxContainer _jobList => CJobList;
         private BoxContainer _antagList => CAntagList;
@@ -115,7 +115,6 @@ namespace Content.Client.Preferences.UI
             _preferencesManager = preferencesManager;
             _configurationManager = configurationManager;
             _markingManager = IoCManager.Resolve<MarkingManager>();
-
             #region Left
 
             #region Randomize
@@ -170,6 +169,15 @@ namespace Content.Client.Preferences.UI
             };
 
             #endregion Gender
+
+            //TTS-Start
+            #region Voice
+
+            InitializeVoice();
+
+
+            #endregion
+            //TTS-End
 
             #region Species
 
@@ -470,7 +478,7 @@ namespace Content.Client.Preferences.UI
 
             _antagPreferences = new List<AntagPreferenceSelector>();
 
-            foreach (var antag in prototypeManager.EnumeratePrototypes<AntagPrototype>().OrderBy(a => a.Name))
+            foreach (var antag in prototypeManager.EnumeratePrototypes<AntagPrototype>().OrderBy(a => Loc.GetString(a.Name)))
             {
                 if (!antag.SetPreference)
                 {
@@ -492,7 +500,7 @@ namespace Content.Client.Preferences.UI
 
             #region Traits
 
-            var traits = prototypeManager.EnumeratePrototypes<TraitPrototype>().OrderBy(t => t.Name).ToList();
+            var traits = prototypeManager.EnumeratePrototypes<TraitPrototype>().OrderBy(t => Loc.GetString(t.Name)).ToList();
             _traitPreferences = new List<TraitPreferenceSelector>();
             _tabContainer.SetTabTitle(3, Loc.GetString("humanoid-profile-editor-traits-tab"));
 
@@ -628,7 +636,8 @@ namespace Content.Client.Preferences.UI
 
         private void OnSkinColorOnValueChanged()
         {
-            if (Profile is null) return;
+            if (Profile is null)
+                return;
 
             var skin = _prototypeManager.Index<SpeciesPrototype>(Profile.Species).SkinColoration;
 
@@ -772,12 +781,19 @@ namespace Content.Client.Preferences.UI
                     break;
             }
             UpdateGenderControls();
+            UpdateTTSVoicesControls();
             IsDirty = true;
         }
 
         private void SetGender(Gender newGender)
         {
             Profile = Profile?.WithGender(newGender);
+            IsDirty = true;
+        }
+
+        private void SetVoice(string newVoice)
+        {
+            Profile = Profile?.WithVoice(newVoice);
             IsDirty = true;
         }
 
@@ -867,7 +883,8 @@ namespace Content.Client.Preferences.UI
                 {
                     sexes.Add(sex);
                 }
-            } else
+            }
+            else
             {
                 sexes.Add(Sex.Unsexed);
             }
@@ -883,7 +900,6 @@ namespace Content.Client.Preferences.UI
             else
                 _sexButton.SelectId((int) sexes[0]);
         }
-
         private void UpdateSkinColor()
         {
             if (Profile == null)
@@ -1038,7 +1054,8 @@ namespace Content.Client.Preferences.UI
 
         public void UpdateControls()
         {
-            if (Profile is null) return;
+            if (Profile is null)
+                return;
             UpdateNameEdit();
             UpdateFlavorTextEdit();
             UpdateSexControls();
@@ -1056,6 +1073,7 @@ namespace Content.Client.Preferences.UI
             UpdateTraitPreferences();
             UpdateMarkings();
             RebuildSpriteView();
+            UpdateTTSVoicesControls();
 
             _preferenceUnavailableButton.SelectId((int) Profile.PreferenceUnavailable);
         }
@@ -1238,12 +1256,12 @@ namespace Content.Client.Preferences.UI
             {
                 Antag = antag;
 
-                _checkBox = new CheckBox {Text = $"{antag.Name}"};
+                _checkBox = new CheckBox {Text = Loc.GetString(antag.Name)};
                 _checkBox.OnToggled += OnCheckBoxToggled;
 
                 if (antag.Description != null)
                 {
-                    _checkBox.ToolTip = antag.Description;
+                    _checkBox.ToolTip = Loc.GetString(antag.Description);
                     _checkBox.TooltipDelay = 0.2f;
                 }
 
@@ -1280,12 +1298,12 @@ namespace Content.Client.Preferences.UI
             {
                 Trait = trait;
 
-                _checkBox = new CheckBox {Text = $"{trait.Name}"};
+                _checkBox = new CheckBox {Text = Loc.GetString(trait.Name)};
                 _checkBox.OnToggled += OnCheckBoxToggled;
 
-                if (trait.Description != null)
+                if (trait.Description is { } desc)
                 {
-                    _checkBox.ToolTip = trait.Description;
+                    _checkBox.ToolTip = Loc.GetString(desc);
                     _checkBox.TooltipDelay = 0.2f;
                 }
 

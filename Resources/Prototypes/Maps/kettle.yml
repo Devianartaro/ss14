@@ -1,8 +1,8 @@
 - type: gameMap
-  id: WhiteKettle
+  id: Kettle
   mapName: 'Kettle'
-  mapPath: /Maps/White/Whitekettle.yml
-  minPlayers: 35
+  mapPath: /Maps/kettle.yml
+  minPlayers: 0
   stations:
     Kettle:
       mapNameTemplate: '{0} Kettle {1}'

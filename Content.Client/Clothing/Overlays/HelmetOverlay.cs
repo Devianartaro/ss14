@@ -1,13 +1,9 @@
 ﻿using System.Linq;
-using Content.Client.Resources;
 using Content.Client.Stylesheets;
-using Content.Shared.CCVar;
 using Content.Shared.Clothing.Components;
 using Robust.Client.Graphics;
 using Robust.Client.ResourceManagement;
-using Robust.Shared.Configuration;
 using Robust.Shared.Enums;
-using Robust.Shared.Prototypes;
 using Robust.Shared.Timing;
 
 namespace Content.Client.Clothing.Overlays;
@@ -16,11 +12,8 @@ public sealed class HelmetOverlay : Overlay
 {
     [Dependency] private readonly IResourceCache _cache = default!;
     [Dependency] private readonly IClyde _clyde = default!;
-    [Dependency] private readonly IPrototypeManager _prototype = default!;
     [Dependency] private readonly IGameTiming _timing = default!;
-    [Dependency] private readonly IConfigurationManager _cfg = default!;
 
-    private readonly ShaderInstance _shader;
     private IRenderTexture? _buffer;
     private TimeSpan _lastDraw = TimeSpan.Zero;
 
@@ -29,8 +22,6 @@ public sealed class HelmetOverlay : Overlay
     public HelmetOverlay()
     {
         IoCManager.InjectDependencies(this);
-
-        _shader = _prototype.Index<ShaderPrototype>("Crt2").Instance().Duplicate();
     }
 
     public override bool RequestScreenTexture { get; } = true;
@@ -57,7 +48,7 @@ public sealed class HelmetOverlay : Overlay
             return;
 
         _lastDraw = _timing.CurTime;
-        var font = _cache.Exo2Stack(size: 32);
+        var font = _cache.NotoStack(size: 32);
 
         _buffer?.Dispose();
         _buffer = _clyde.CreateRenderTarget(new Vector2i(ScreenTexture.Width, ScreenTexture.Height),
@@ -70,10 +61,6 @@ public sealed class HelmetOverlay : Overlay
             var bounds = new UIBox2(0, 0, ScreenTexture.Width, ScreenTexture.Height);
 
             handle.DrawTextureRect(ScreenTexture, bounds);
-
-            // Overlay
-            if (_state.Texture is { } texture)
-                handle.DrawTextureRect(_cache.GetTexture(texture), bounds);
 
             if (!_state.HasHud)
                 goto skipHud;
@@ -146,20 +133,9 @@ public sealed class HelmetOverlay : Overlay
                 DrawString(handle, font, bottomLeft,
                     Loc.GetString("helmet-overlay-radiation", ("radiation", _state.Radiation!.Value)), Color.White);
             }
-
-            if (_cfg.GetCVar(CCVars.Shaders))
-            {
-                _shader.SetParameter("SCREEN_TEXTURE", _buffer.Texture);
-                _shader.SetParameter("bloom_type", 1);
-                _shader.SetParameter("mask_type", 1);
-                _shader.SetParameter("res", new Vector2(ScreenTexture.Width, ScreenTexture.Height));
-                handle.UseShader(_shader);
-            }
-
             handle.DrawTextureRect(_buffer.Texture, bounds);
 
-            skipHud:
-            handle.UseShader(null);
+            skipHud:;
         }, Color.Transparent);
 
 

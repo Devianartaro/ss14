@@ -191,6 +191,7 @@
     thermalRegulationTemperatureThreshold: 25
   - type: Internals
   - type: MobState
+  - type: MobThresholds
     thresholds:
       0: Alive
       100: Critical
@@ -273,6 +274,7 @@
         amount: 5
   #  - type: Recyclable Turns out turning off recycler safeties without considering the instagib is a bad idea
   #    safe: false
+  - type: TTS
   - type: Speech
     speechSounds: Alto
   - type: Vocal
@@ -371,6 +373,7 @@
     - type: Damageable
       damageContainer: Biological
     - type: MobState
+    - type: MobThresholds
       thresholds:
         0: Alive
         100: Critical

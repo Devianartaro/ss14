@@ -24,6 +24,7 @@ using Content.Shared.Damage;
 using Content.Shared.Database;
 using Content.Shared.Inventory;
 using Content.Shared.PDA;
+using Content.Shared.Stacks;
 using Content.Shared.Speech;
 using Content.Shared.Verbs;
 using Content.Shared.Weapons.Ranged.Components;
@@ -553,7 +554,7 @@ public sealed partial class AdminVerbSystem
         };
         args.Verbs.Add(renameAndRedescribe);
 
-        if (TryComp<SharedSpeechComponent>(args.Target, out _))
+        if (TryComp<SpeechComponent>(args.Target, out _)) //forcesay white
         {
             Verb forceSay = new()
             {
@@ -565,21 +566,21 @@ public sealed partial class AdminVerbSystem
                 {
                     _quickDialog.OpenDialog(player, "Force Say", "Say", (string say) =>
                     {
-                            var chatType = InGameICChatType.Speak;
+                        var chatType = InGameICChatType.Speak;
 
-                            if (say.StartsWith("*"))
-                            {
-                                chatType = InGameICChatType.Emote;
-                                say = say.Substring(1);
-                            }
-                            else if(say.StartsWith("#"))
-                            {
-                                chatType = InGameICChatType.Whisper;
-                                say = say.Substring(1);
-                            }
+                        if (say.StartsWith("*"))
+                        {
+                            chatType = InGameICChatType.Emote;
+                            say = say.Substring(1);
+                        }
+                        else if(say.StartsWith("#"))
+                        {
+                            chatType = InGameICChatType.Whisper;
+                            say = say.Substring(1);
+                        }
 
-                            _chatSystem.TrySendInGameICMessage(args.Target, say, chatType, false);
-                        });
+                        _chatSystem.TrySendInGameICMessage(args.Target, say, chatType, false);
+                    });
                 },
 
                 Impact = LogImpact.Medium,
@@ -588,7 +589,7 @@ public sealed partial class AdminVerbSystem
             };
 
             args.Verbs.Add(forceSay);
-        }
+        } //forcesay white end
 
         if (TryComp<StationDataComponent>(args.Target, out var stationData))
         {

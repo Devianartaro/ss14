@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using Content.Server.RoundEnd;
 using Content.Shared.CCVar;
 using Robust.Shared;
 using Robust.Shared.Configuration;
@@ -44,22 +45,9 @@ public sealed class UtkaSocketWrapper
 
         _utkaSocket.Start();
 
-        _netManager.RegisterNetMessage<MsgConCmd>(OnConsoleCommand);
-
         _initialized = true;
     }
 
-    private void OnConsoleCommand(MsgConCmd message) // Я не хочу создавать очередной говнокласс для одного метода.
-    {
-        var toUtkaMessage = new ToUtkaMessage()
-        {
-            Key = _key,
-            Command = "garbage",
-            Message = new List<string>() {message.Text}
-        };
-
-        SendMessage(toUtkaMessage);
-    }
 
     public void SendMessage(ToUtkaMessage message)
     {

@@ -13,8 +13,8 @@ namespace Content.Server.UtkaIntegration;
 public sealed class UtkaWhoCommand : IUtkaCommand
 {
     public string Name => "who";
-
-    public void Execute(UtkaSocket socket, EndPoint requester, FromDiscordMessage message, string[] args)
+    [Dependency] private readonly UtkaSocketWrapper _utkaSocketWrapper = default!;
+    public void Execute(FromDiscordMessage message, string[] args)
     {
         var configManager = IoCManager.Resolve<IConfigurationManager>();
 
@@ -41,8 +41,6 @@ public sealed class UtkaWhoCommand : IUtkaCommand
             }
         };
 
-        var finalMessage = JsonSerializer.Serialize(toUtkaMessage);
-
-        socket.SendAsync(requester, finalMessage);
+        _utkaSocketWrapper.SendMessage(toUtkaMessage);
     }
 }

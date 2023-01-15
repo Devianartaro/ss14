@@ -62,7 +62,7 @@ public sealed class UtkaSocket : UdpServer
         }
 
 
-        ExecuteCommand(endpoint, fromDiscordMessage, fromDiscordMessage!.Command!, fromDiscordMessage!.Message!.ToArray());
+        ExecuteCommand(fromDiscordMessage, fromDiscordMessage!.Command!, fromDiscordMessage!.Message!.ToArray());
 
         ReceiveAsync();
     }
@@ -77,7 +77,7 @@ public sealed class UtkaSocket : UdpServer
     }
 
 
-    private void ExecuteCommand(EndPoint requester, FromDiscordMessage message, string command, string[] args)
+    private void ExecuteCommand(FromDiscordMessage message, string command, string[] args)
     {
         if (!Commands.ContainsKey(command))
         {
@@ -86,7 +86,7 @@ public sealed class UtkaSocket : UdpServer
         }
 
         _sawmill.Info($"UTKASockets: Execiting command from UTKASocket: {command} args: {string.Join(" ", args)}");
-        _taskManager.RunOnMainThread(() => Commands[command].Execute(this, requester, message, args));
+        _taskManager.RunOnMainThread(() => Commands[command].Execute(message, args));
     }
 
     private bool NullCheck(FromDiscordMessage fromDiscordMessage)

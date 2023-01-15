@@ -12,7 +12,9 @@ namespace Content.Server.UtkaIntegration;
 public sealed class UtkaAdminWhoCommand : IUtkaCommand
 {
     public string Name => "adminwho";
-    public void Execute(UtkaSocket socket, EndPoint requester, FromDiscordMessage message, string[] args)
+    [Dependency] public readonly UtkaSocketWrapper UtkaSocketWrapper = default!;
+
+    public void Execute(FromDiscordMessage message, string[] args)
     {
         var adminManager = IoCManager.Resolve<IAdminManager>();
         var configManager = IoCManager.Resolve<IConfigurationManager>();
@@ -36,8 +38,6 @@ public sealed class UtkaAdminWhoCommand : IUtkaCommand
             }
         };
 
-        var finalMessage = JsonSerializer.Serialize(toUtkaMessage);
-
-        socket.SendAsync(requester, finalMessage);
+        UtkaSocketWrapper.SendMessage(toUtkaMessage);
     }
 }

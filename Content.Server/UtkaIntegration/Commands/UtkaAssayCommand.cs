@@ -10,7 +10,7 @@ namespace Content.Server.UtkaIntegration;
 public sealed class UtkaAssayCommand : IUtkaCommand
 {
     public string Name => "asay";
-    public void Execute(UtkaSocket socket, EndPoint requester, FromDiscordMessage message, string[] args)
+    public void Execute(FromDiscordMessage message, string[] args)
     {
         var ckey = message.Ckey;
         var content = string.Join(" ", args);

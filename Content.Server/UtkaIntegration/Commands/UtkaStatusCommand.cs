@@ -23,7 +23,7 @@ public sealed class UtkaStatusCommand : IUtkaCommand
     [Dependency] private readonly IConfigurationManager _configurationManager = default!;
     [Dependency] private readonly UtkaSocketWrapper _utkaSocketWrapper = default!;
 
-    public void Execute(UtkaSocket socket, EndPoint requester, FromDiscordMessage message, string[] args)
+    public void Execute(FromDiscordMessage message, string[] args)
     {
         var currentPlayerCount = _playerManager.PlayerCount.ToString();
         var currentAdminCount = _adminManager.AllAdmins.Count().ToString();

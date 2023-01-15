@@ -16,12 +16,12 @@ public sealed class UtkaStatusCommand : IUtkaCommand
 {
     public string Name => "serverstatus";
 
-    [Dependency] private readonly IPlayerManager _playerManager = default!;
-    [Dependency] private readonly IAdminManager _adminManager = default!;
-    [Dependency] private readonly RoundEndSystem _roundEndSystem = default!;
-    [Dependency] private readonly GameTicker _gameTicker = default!;
-    [Dependency] private readonly IConfigurationManager _configurationManager = default!;
-    [Dependency] private readonly UtkaSocketWrapper _utkaSocketWrapper = default!;
+    private IPlayerManager _playerManager => IoCManager.Resolve<IPlayerManager>();
+    private IAdminManager _adminManager => IoCManager.Resolve<IAdminManager>();
+    private RoundEndSystem _roundEndSystem => EntitySystem.Get<RoundEndSystem>();
+    private GameTicker _gameTicker => EntitySystem.Get<GameTicker>();
+    private IConfigurationManager _configurationManager => IoCManager.Resolve<IConfigurationManager>();
+    private UtkaSocketWrapper _utkaSocketWrapper => IoCManager.Resolve<UtkaSocketWrapper>();
 
     public void Execute(FromDiscordMessage message, string[] args)
     {

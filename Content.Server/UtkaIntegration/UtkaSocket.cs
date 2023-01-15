@@ -19,7 +19,7 @@ public sealed class UtkaSocket : UdpServer
     private readonly ISawmill _sawmill = default!;
     private readonly ITaskManager _taskManager = default!;
 
-    public List<EndPoint> EndPoints = new();
+    public EndPoint Requester = default!;
 
 
     public UtkaSocket(IPAddress address, int port, string key) : base(address, port)
@@ -39,41 +39,57 @@ public sealed class UtkaSocket : UdpServer
     protected override void OnReceived(EndPoint endpoint, byte[] buffer, long offset, long size)
     {
         base.OnReceived(endpoint, buffer, offset, size);
+        Requester = endpoint;
+        if (!ValidateMessage(endpoint, buffer, offset, size, out var fromDiscordMessage))
+        {
+            var message = new ToUtkaMessage()
+            {
+                Key = Key,
+                Command = "retard",
+                Message = new()
+                {
+                    "Wrong key or json"
+                }
+            };
 
+            SendMessage(message);
+            return;
+        }
+
+        ExecuteCommand(fromDiscordMessage!, fromDiscordMessage!.Command!, fromDiscordMessage!.Message!.ToArray());
+    }
+
+    private bool ValidateMessage(EndPoint endpoint, byte[] buffer, long offset, long size, out FromDiscordMessage? fromDiscordMessage)
+    {
         var message = Encoding.UTF8.GetString(buffer, (int) offset, (int) size);
+        fromDiscordMessage = null;
 
-        var fromDiscordMessage = JsonSerializer.Deserialize<FromDiscordMessage>(message);
+        if (string.IsNullOrEmpty(message))
+        {
+            return false;
+        }
+
+        fromDiscordMessage = JsonSerializer.Deserialize<FromDiscordMessage>(message);
 
         if (!NullCheck(fromDiscordMessage!))
         {
             _sawmill.Info($"UTKASockets: Received message from discord, but it was cringe.");
-            return;
+            return false;
         }
 
         if (fromDiscordMessage!.Key != Key)
         {
             _sawmill.Info($"UTKASockets: Received message with invalid key from endpoint {endpoint}");
-            return;
+            return false;
         }
 
-        if (!EndPoints.Contains(endpoint))
-        {
-            EndPoints.Add(endpoint);
-        }
-
-
-        ExecuteCommand(fromDiscordMessage, fromDiscordMessage!.Command!, fromDiscordMessage!.Message!.ToArray());
-
-        ReceiveAsync();
+        return true;
     }
 
     public void SendMessage(ToUtkaMessage message)
     {
-        foreach (var endPoint in EndPoints)
-        {
-            var finalMessage = JsonSerializer.Serialize(message);
-            SendAsync(endPoint, finalMessage);
-        }
+        var finalMessage = JsonSerializer.Serialize(message);
+        SendAsync(Requester, finalMessage);
     }
 
 
